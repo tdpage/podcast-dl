@@ -9,13 +9,27 @@ Created on Tue Dec  1 15:36:53 2020
 from lxml import etree as ET
 from tqdm import tqdm
 import requests
+import sys
 import os
 
 def main():
+    # verify if input is correct
+    numargs = len(sys.argv)
+    if (numargs < 2):
+        print('Not enough input args')
+        return 1
+    elif (numargs > 2):
+        print('Too many input args')
+        return 1 
     
-    rssfile = 'al_short.rss'
-    #rssfile = 'al_shortest.rss'
-    rssfile = 'al.rss'
+    rssfile = sys.argv[1]
+    inputExt = rssfile.split('.',1)[1]
+    
+    if (inputExt != 'rss' and inputExt != 'xml'):
+        print('Please enter a .rss or .xml file')
+        return 1
+    
+    ## read the RSS file
     tree = ET.parse(rssfile)
     root = tree.getroot()
     nsmap = {'media':'{http://search.yahoo.com/mrss/}'}
@@ -24,14 +38,17 @@ def main():
     
     podcastElement = root.find('channel').find('title')
     podcastTitle = podcastElement.text
-    
+       
+    numEpisodes = sum(1 for _ in root.iter('item'))
+    curEpisode  = numEpisodes + 1; # the current episode number counts down from the total
+
     for episode in root.iter('item'):
         
-        # find some important informational elements about the episode
+        # find some important information about the episode
         titleElement = episode.find('title')
         mediaElement = episode.find('{http://search.yahoo.com/mrss/}content')
-        descrpElement = episode.find('description')
-        
+        descrpElement = episode.find('description')      
+ 
         # store that information 
         title = titleElement.text
         url   = mediaElement.get('url')
@@ -40,7 +57,7 @@ def main():
         
 
         # set the download path and filename
-        path = '/home/' + os.getlogin() + '/Downloads/' + podcastTitle+'/' + title+'/'
+        path = '/home/' + os.getlogin() + '/Downloads/' + podcastTitle + '/' + ' ' + title + '/'
         textfile  = title + '.txt'
         audiofile = title + '.mp3'
         
