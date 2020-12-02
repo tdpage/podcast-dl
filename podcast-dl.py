@@ -7,6 +7,7 @@ Created on Tue Dec  1 15:36:53 2020
 """
 
 from lxml import etree as ET
+from tqdm import tqdm
 import requests
 import os
 
@@ -66,17 +67,26 @@ def main():
             f.write('Download path: ' + path + path + '\n\n')
             f.write('Description: ' + descrp + '\n\n')
             f.close()
+        else:
+            print('Information file already there, not retrieving')
         
         # if the audio file doesn't exist, make it
         if not os.path.exists(path + audiofile):
 
             r = requests.get(urlShort, stream=True)
+            audiofileSize= int(r.headers.get('content-length', 0))
+            progressBar = tqdm(total=audiofileSize, unit='iB', unit_scale=True)
 
             # open the file named filename in binary write mode as shorthand fd, 
             # then write each chunk as it comes in to that file.
             with open(path + audiofile, 'wb') as fd:
                 for chunk in r.iter_content(chunk_size=128):
+                    progressBar.update(len(chunk))
                     fd.write(chunk)
+            progressBar.close()
+        else:
+            print('Audio file there, not retrieving')
+            
     
         
 if __name__ == "__main__":
