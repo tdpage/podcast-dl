@@ -35,7 +35,6 @@ def main():
     nsmap = {'media':'{http://search.yahoo.com/mrss/}'}
     
     # Audioboom RSS feeds list each episode as an <item> tag
-    
     podcastElement = root.find('channel').find('title')
     podcastTitle = podcastElement.text
        
@@ -55,6 +54,13 @@ def main():
         urlShort = str(url.split('?',-1)[0]) # get everything before the first '?' in the URL
         descrp = descrpElement.text
         
+        # scrub that information of invalid characters for certain filesystems
+        # For NTFS: / ? < > : * | " 
+        title = title.replace('?','')
+        title = title.replace(':',' -')
+        #title = title.replace(',','')
+        while title[-1] == ' ':
+            title = title[:-1]
 
         # set the download path and filename
         path = '/home/' + os.getlogin() + '/Downloads/' + podcastTitle + '/' + ' ' + title + '/'
